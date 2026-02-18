@@ -1,0 +1,12 @@
+/* Improve crop UI visibility on dark theme */
+.image-crop-modal__area {
+  background: #525252; /* lighter gray - improves visibility of dark product images */
+  border-radius: 8px;
+  padding: 16px;
+}
+
+/* Override ReactCrop vars for better visibility on dark bg */
+.image-crop-modal__area .ReactCrop {
+  --rc-border-color: rgba(255, 255, 255, 0.9);
+  --rc-drag-handle-bg-colour: rgba(255, 255, 255, 0.35);
+}
