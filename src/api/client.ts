@@ -46,9 +46,10 @@ export const api = {
     delete: (id: number) => fetchApi(`/tags/${id}`, { method: 'DELETE' }),
   },
   developers: {
-    list: () => fetchApi<{ id: number; name: string; email: string }[]>(`/developers`),
-    create: (data: { name?: string; email: string }) => fetchApi(`/developers`, { method: 'POST', body: JSON.stringify(data) }),
-    update: (id: number, data: { name?: string; email?: string }) => fetchApi(`/developers/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+    list: () => fetchApi<{ id: number; name: string; email: string; revenue_percent: number; created_at: string }[]>(`/developers`),
+    getProducts: (id: number) => fetchApi<{ id: number; name: string }[]>(`/developers/${id}/products`),
+    create: (data: { name?: string; email: string; password?: string; revenue_percent?: number }) => fetchApi(`/developers`, { method: 'POST', body: JSON.stringify(data) }),
+    update: (id: number, data: { name?: string; email?: string; password?: string; revenue_percent?: number }) => fetchApi(`/developers/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
     delete: (id: number) => fetchApi(`/developers/${id}`, { method: 'DELETE' }),
   },
   products: {
@@ -57,9 +58,9 @@ export const api = {
       return fetchApi<any[]>(`/products${q}`);
     },
     get: (id: number) => fetchApi<any>(`/products/${id}?admin=1`),
-    create: (data: { name: string; price: number; category_id: number; description?: string; visibility?: string; tags?: string[] }) =>
+    create: (data: { name: string; price: number; category_id: number; description?: string; visibility?: string; tags?: string[]; robux_price?: number | null; developer_id?: number | null }) =>
       fetchApi(`/products`, { method: 'POST', body: JSON.stringify(data) }),
-    update: (id: number, data: Partial<{ name: string; price: number; category_id: number; description: string; visibility: string; tags: string[] }>) =>
+    update: (id: number, data: Partial<{ name: string; price: number; category_id: number; description: string; visibility: string; tags: string[]; image_urls: string[]; robux_price: number | null; developer_id: number | null }>) =>
       fetchApi(`/products/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
     delete: (id: number) => fetchApi(`/products/${id}`, { method: 'DELETE' }),
     uploadImage: (id: number, file: File) => {
@@ -107,6 +108,7 @@ export const api = {
       sales_by_month: { name: string; sales: number }[];
       sales_by_month_usd: { name: string; usd: number; platform_usd: number }[];
       sales_by_month_robux: { name: string; robux: number; platform_robux: number }[];
+      by_product?: Record<number, { sales: number; revenue: number }>;
     }>(`/stats${q}`);
   },
   downloads: {

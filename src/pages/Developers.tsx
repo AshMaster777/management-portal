@@ -6,7 +6,7 @@ type Developer = { id: number; email: string; name: string; revenue_percent: num
 
 export function Developers() {
   const [developers, setDevelopers] = useState<Developer[]>([]);
-  const [productsByDev, setProductsByDev] = useState<Record<number, any[]>>({});
+  const [productsByDev, setProductsByDev] = useState<Record<number, { id: number; name: string }[]>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showForm, setShowForm] = useState(false);
@@ -24,10 +24,10 @@ export function Developers() {
       .list()
       .then((list) => {
         setDevelopers(list);
-        return Promise.all(list.map((d) => api.developers.getProducts(d.id).then((prods) => ({ id: d.id, prods }))));
+        return Promise.all(list.map((d) => api.developers.getProducts(d.id).then((prods: { id: number; name: string }[]) => ({ id: d.id, prods }))));
       })
-      .then((pairs) => {
-        const map: Record<number, any[]> = {};
+      .then((pairs: { id: number; prods: { id: number; name: string }[] }[]) => {
+        const map: Record<number, { id: number; name: string }[]> = {};
         pairs.forEach(({ id, prods }) => (map[id] = prods));
         setProductsByDev(map);
       })

@@ -150,7 +150,7 @@ export function Dashboard() {
                 {CHART_PROPS.grid}
                 <XAxis dataKey="name" stroke="#52525b" axisLine={false} tickLine={false} fontSize={12} />
                 <YAxis stroke="#52525b" axisLine={false} tickLine={false} tickFormatter={(v) => `$${v}`} fontSize={12} />
-                <Tooltip contentStyle={CHART_PROPS.tooltipStyle} formatter={(v: number) => [`$${v.toFixed(2)}`, 'Revenue']} />
+                <Tooltip contentStyle={CHART_PROPS.tooltipStyle} formatter={(v: number | undefined) => [`$${(v ?? 0).toFixed(2)}`, 'Revenue']} />
                 <Area type="monotone" dataKey="usd" stroke="#3b82f6" strokeWidth={2} fillOpacity={1} fill="url(#colorUsd)" />
               </AreaChart>
             </ResponsiveContainer>
@@ -166,7 +166,7 @@ export function Dashboard() {
                 {CHART_PROPS.grid}
                 <XAxis dataKey="name" stroke="#52525b" axisLine={false} tickLine={false} fontSize={12} />
                 <YAxis stroke="#52525b" axisLine={false} tickLine={false} tickFormatter={(v) => `R$ ${v}`} fontSize={12} />
-                <Tooltip contentStyle={CHART_PROPS.tooltipStyle} formatter={(v: number) => [`R$ ${v.toLocaleString()}`, 'Revenue']} />
+                <Tooltip contentStyle={CHART_PROPS.tooltipStyle} formatter={(v: number | undefined) => [`R$ ${(v ?? 0).toLocaleString()}`, 'Revenue']} />
                 <Area type="monotone" dataKey="robux" stroke="#22c55e" strokeWidth={2} fillOpacity={1} fill="url(#colorRobux)" />
               </AreaChart>
             </ResponsiveContainer>
