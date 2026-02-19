@@ -67,7 +67,7 @@ export function Products() {
           </p>
         </div>
         <Link
-          to="/products/new"
+          to="/admin/products/new"
           className="flex items-center gap-2 bg-accent text-bg-primary px-4 py-2 rounded-full font-medium hover:bg-accent-hover transition-colors border border-accent"
         >
           <Plus size={20} />
@@ -105,7 +105,7 @@ export function Products() {
           <div className="p-8 text-center text-text-muted">Loading...</div>
         ) : filtered.length === 0 ? (
           <div className="p-8 text-center text-text-muted">
-            No products yet. <Link to="/products/new" className="text-accent">Add your first product</Link>.
+            No products yet. <Link to="/admin/products/new" className="text-accent">Add your first product</Link>.
           </div>
         ) : (
           <table className="w-full text-left">
@@ -154,7 +154,7 @@ export function Products() {
                     </span>
                   </td>
                   <td className="p-4 flex gap-2">
-                    <Link to={`/products/${p.id}`} className="p-2 text-text-muted hover:text-accent">
+                    <Link to={`/admin/products/${p.id}`} className="p-2 text-text-muted hover:text-accent">
                       <Pencil size={18} />
                     </Link>
                     <button onClick={() => handleDelete(p.id)} className="p-2 text-text-muted hover:text-red-400">

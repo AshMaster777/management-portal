@@ -178,7 +178,7 @@ export function ProductForm() {
           tags: tagArr,
           developer_id: developerId === '' ? null : developerId,
         });
-        navigate('/products');
+        navigate('/admin/products');
       } else {
         const prod = (await api.products.create({
           name: title,
@@ -193,7 +193,7 @@ export function ProductForm() {
         const newPid = prod.id;
         if (coverFiles.length) await api.products.uploadImages(newPid, coverFiles);
         for (const f of productFiles) await api.products.uploadFile(newPid, f);
-        navigate('/products');
+        navigate('/admin/products');
       }
     };
 
@@ -575,7 +575,7 @@ export function ProductForm() {
           </button>
           <button
             type="button"
-            onClick={() => navigate('/products')}
+            onClick={() => navigate('/admin/products')}
             className="border border-border-primary px-6 py-2 rounded-full"
           >
             Cancel

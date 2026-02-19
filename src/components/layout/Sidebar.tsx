@@ -2,20 +2,20 @@ import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, ShoppingCart, Package, Tags, Layers, BarChart3, Settings, LogOut, FileText, Download, User, HelpCircle, Coins, Users, Handshake, ClipboardList } from 'lucide-react';
 
 const navigation = [
-  { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-  { name: 'Orders', href: '/orders', icon: ShoppingCart },
-  { name: 'Sales', href: '/sales', icon: BarChart3 },
-  { name: 'Products', href: '/products', icon: Package },
-  { name: 'Categories', href: '/categories', icon: Layers },
-  { name: 'Tags', href: '/tags', icon: Tags },
-  { name: 'FAQ', href: '/faqs', icon: HelpCircle },
-  { name: 'Licenses', href: '/licenses', icon: FileText },
-  { name: 'Downloads', href: '/downloads', icon: Download },
-  { name: 'Credits', href: '/credits', icon: Coins },
-  { name: 'Partners', href: '/partners', icon: Handshake },
-  { name: 'Partnerships', href: '/partnerships', icon: ClipboardList },
-  { name: 'Staff', href: '/staff', icon: Users },
-  { name: 'Account Details', href: '/account', icon: User },
+  { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+  { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
+  { name: 'Sales', href: '/admin/sales', icon: BarChart3 },
+  { name: 'Products', href: '/admin/products', icon: Package },
+  { name: 'Categories', href: '/admin/categories', icon: Layers },
+  { name: 'Tags', href: '/admin/tags', icon: Tags },
+  { name: 'FAQ', href: '/admin/faqs', icon: HelpCircle },
+  { name: 'Licenses', href: '/admin/licenses', icon: FileText },
+  { name: 'Downloads', href: '/admin/downloads', icon: Download },
+  { name: 'Credits', href: '/admin/credits', icon: Coins },
+  { name: 'Partners', href: '/admin/partners', icon: Handshake },
+  { name: 'Partnerships', href: '/admin/partnerships', icon: ClipboardList },
+  { name: 'Staff', href: '/admin/staff', icon: Users },
+  { name: 'Account Details', href: '/admin/account', icon: User },
 ];
 
 export function Sidebar() {
@@ -44,7 +44,7 @@ export function Sidebar() {
       </nav>
       <div className="border-t border-border-primary p-3 space-y-1">
         <NavLink
-          to="/settings"
+          to="/admin/account"
           className="group flex items-center rounded-md px-3 py-2 text-sm font-medium text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors"
         >
           <Settings className="mr-3 h-4 w-4 flex-shrink-0" aria-hidden="true" />

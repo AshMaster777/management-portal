@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AdminGate } from './components/AdminGate';
 import { Layout } from './components/layout/Layout';
 import { Dashboard } from './pages/Dashboard';
@@ -19,10 +19,11 @@ import { Partnerships } from './pages/Partnerships';
 
 function App() {
   return (
-    <Router basename="/admin">
+    <Router>
       <AdminGate>
       <Routes>
-        <Route path="/" element={<Layout />}>
+        <Route path="/" element={<Navigate to="/admin" replace />} />
+        <Route path="/admin" element={<Layout />}>
           <Route index element={<Dashboard />} />
           <Route path="orders" element={<Orders />} />
           <Route path="sales" element={<Sales />} />
@@ -41,6 +42,7 @@ function App() {
           <Route path="account" element={<AccountDetails />} />
           <Route path="*" element={<div className="p-8">Not Found</div>} />
         </Route>
+        <Route path="*" element={<Navigate to="/admin" replace />} />
       </Routes>
       </AdminGate>
     </Router>
