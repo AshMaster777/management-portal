@@ -165,9 +165,29 @@ export function ProductForm() {
     const run = async () => {
       const pid = isEdit ? parseInt(id!) : 0;
       if (isEdit && id) {
-        // Upload first so media is saved before any update
-        if (coverFiles.length) await api.products.uploadImages(pid, coverFiles);
-        for (const f of productFiles) await api.products.uploadFile(pid, f);
+        // Upload images and files in parallel with error recovery
+        const uploadPromises: Promise<void>[] = [];
+        
+        if (coverFiles.length) {
+          uploadPromises.push(
+            api.products.uploadImages(pid, coverFiles).catch((e) => {
+              console.error('Image upload failed:', e);
+              throw new Error(`Image upload failed: ${e.message}`);
+            })
+          );
+        }
+        
+        productFiles.forEach((f) => {
+          uploadPromises.push(
+            api.products.uploadFile(pid, f).catch((e) => {
+              console.error(`File upload failed (${f.name}):`, e);
+              throw new Error(`File "${f.name}" upload failed: ${e.message}`);
+            })
+          );
+        });
+        
+        await Promise.all(uploadPromises);
+        
         await api.products.update(pid, {
           name: title,
           price: parseFloat(price),
@@ -191,8 +211,30 @@ export function ProductForm() {
           developer_id: developerId === '' ? null : developerId,
         })) as { id: number };
         const newPid = prod.id;
-        if (coverFiles.length) await api.products.uploadImages(newPid, coverFiles);
-        for (const f of productFiles) await api.products.uploadFile(newPid, f);
+        
+        // Upload images and files in parallel
+        const uploadPromises: Promise<void>[] = [];
+        
+        if (coverFiles.length) {
+          uploadPromises.push(
+            api.products.uploadImages(newPid, coverFiles).catch((e) => {
+              console.error('Image upload failed:', e);
+              throw new Error(`Image upload failed: ${e.message}`);
+            })
+          );
+        }
+        
+        productFiles.forEach((f) => {
+          uploadPromises.push(
+            api.products.uploadFile(newPid, f).catch((e) => {
+              console.error(`File upload failed (${f.name}):`, e);
+              throw new Error(`File "${f.name}" upload failed: ${e.message}`);
+            })
+          );
+        });
+        
+        await Promise.all(uploadPromises);
+        
         navigate('/admin/products');
       }
     };

@@ -16,6 +16,7 @@ import { Credits } from './pages/Credits';
 import { Staff } from './pages/Staff';
 import { Partners } from './pages/Partners';
 import { Partnerships } from './pages/Partnerships';
+import { Developers } from './pages/Developers';
 
 function App() {
   return (
@@ -39,6 +40,7 @@ function App() {
           <Route path="partners" element={<Partners />} />
           <Route path="partnerships" element={<Partnerships />} />
           <Route path="staff" element={<Staff />} />
+          <Route path="developers" element={<Developers />} />
           <Route path="account" element={<AccountDetails />} />
           <Route path="*" element={<div className="p-8">Not Found</div>} />
         </Route>

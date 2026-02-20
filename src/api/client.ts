@@ -11,12 +11,25 @@ async function fetchApi<T>(path: string, opts?: RequestInit): Promise<T> {
 }
 
 async function fetchFormData(path: string, formData: FormData, method = 'POST') {
-  const res = await fetch(`${API}${path}`, {
-    method,
-    body: formData,
-  });
-  if (!res.ok) throw new Error((await res.json().catch(() => ({ error: res.statusText }))).error || res.statusText);
-  return res.json();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 120000); // 2 min timeout
+  
+  try {
+    const res = await fetch(`${API}${path}`, {
+      method,
+      body: formData,
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+    if (!res.ok) throw new Error((await res.json().catch(() => ({ error: res.statusText }))).error || res.statusText);
+    return res.json();
+  } catch (err) {
+    clearTimeout(timeout);
+    if ((err as Error).name === 'AbortError') {
+      throw new Error('Upload timeout - file too large or slow connection');
+    }
+    throw err;
+  }
 }
 
 async function verifyAdminPassword(password: string) {

@@ -23,6 +23,28 @@ function extractImageUrls(content: string): string[] {
   return Array.from(found);
 }
 
+/** Image with fallback when Discord CDN returns 404 (expired/deleted attachments) */
+function BrokenImagePlaceholder({ src, className = 'max-h-48' }: { src: string; className?: string }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) {
+    return (
+      <div className={`${className} max-w-full min-w-[120px] min-h-[80px] rounded flex items-center justify-center bg-[#1e1f22] border border-[#3f4147] text-[#6b7280] text-xs px-3 py-2 text-center`}>
+        Image unavailable
+      </div>
+    );
+  }
+  return (
+    <img
+      src={src}
+      alt=""
+      className={`${className} max-w-full rounded object-contain bg-[#1e1f22] border border-[#3f4147]`}
+      loading="lazy"
+      referrerPolicy="no-referrer"
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
 /** Renders text with Discord-style formatting and renders any image URLs in the content as actual images */
 function DiscordPreviewContent({ content }: { content: string }) {
   const imageUrls = extractImageUrls(content);
@@ -44,15 +66,7 @@ function DiscordPreviewContent({ content }: { content: string }) {
       {imageUrls.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-2">
           {imageUrls.map((url, i) => (
-            <img
-              key={i}
-              src={url}
-              alt=""
-              className="max-h-48 max-w-full rounded object-contain bg-[#1e1f22] border border-[#3f4147]"
-              loading="lazy"
-              referrerPolicy="no-referrer"
-              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-            />
+            <BrokenImagePlaceholder key={i} src={url} />
           ))}
         </div>
       )}
@@ -278,12 +292,7 @@ export function Partnerships() {
                         <DiscordPreviewContent content={r.content} />
                         {r.image_url && (
                           <div className="mt-3 rounded overflow-hidden max-w-md">
-                            <img
-                              src={getImageUrl(r.image_url)!}
-                              alt="Attachment"
-                              className="max-h-64 w-full object-contain bg-[#1e1f22]"
-                              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                            />
+                            <BrokenImagePlaceholder src={getImageUrl(r.image_url)!} className="max-h-64" />
                           </div>
                         )}
                       </div>
