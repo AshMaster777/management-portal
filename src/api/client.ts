@@ -36,7 +36,9 @@ async function fetchFormData(
       
       if (!res.ok) {
         if (res.status === 413) {
-          throw new Error('File too large - maximum size is 100MB per file');
+          const body = await res.json().catch(() => ({})) as { error?: string };
+          const msg = body?.error || 'File too large - maximum size is 100MB per file.';
+          throw new Error(msg + ' If the file is under 100MB, the server (nginx) may be blocking it — set client_max_body_size 100M.');
         }
         const errorText = await res.text().catch(() => res.statusText);
         throw new Error(errorText || res.statusText);

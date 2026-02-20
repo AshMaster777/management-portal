@@ -311,6 +311,7 @@ export function ProductForm() {
           >
             + Upload product file
           </label>
+          <p className="text-text-muted text-xs mt-2">Max 100MB per file. If you see &quot;too large&quot;, set nginx <code className="bg-bg-card px-1 rounded">client_max_body_size 100M;</code></p>
         </div>
 
         {/* Title */}
@@ -485,7 +486,8 @@ export function ProductForm() {
               </div>
             ))}
           </div>
-          <p className="text-text-muted text-xs mb-2">Crop to 16:10 to fit product cards. First image is main. Click ★ to set main. Min width 1000px.</p>
+          <p className="text-text-muted text-xs mb-2">Crop to 16:10 to fit product cards. First image is main. Click ★ to set main. Min width 1000px. Max 100MB per file.</p>
+          <p className="text-text-muted text-xs mb-2">If you see &quot;image too large&quot; or upload fails, the server (nginx) must allow large bodies: <code className="bg-bg-card px-1 rounded">client_max_body_size 100M;</code></p>
           <input
             type="file"
             accept="image/*"
