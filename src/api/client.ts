@@ -10,26 +10,65 @@ async function fetchApi<T>(path: string, opts?: RequestInit): Promise<T> {
   return res.json();
 }
 
-async function fetchFormData(path: string, formData: FormData, method = 'POST') {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 120000); // 2 min timeout
-  
-  try {
-    const res = await fetch(`${API}${path}`, {
-      method,
-      body: formData,
-      signal: controller.signal,
-    });
-    clearTimeout(timeout);
-    if (!res.ok) throw new Error((await res.json().catch(() => ({ error: res.statusText }))).error || res.statusText);
-    return res.json();
-  } catch (err) {
-    clearTimeout(timeout);
-    if ((err as Error).name === 'AbortError') {
-      throw new Error('Upload timeout - file too large or slow connection');
+const DEFAULT_UPLOAD_TIMEOUT = 120000;   // 2 min for images/small files
+const LARGE_FILE_UPLOAD_TIMEOUT = 600000; // 10 min for product files (.rbxm etc)
+
+async function fetchFormData(
+  path: string,
+  formData: FormData,
+  method = 'POST',
+  retries = 2,
+  timeoutMs = DEFAULT_UPLOAD_TIMEOUT
+) {
+  let lastError: Error | null = null;
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    
+    try {
+      const res = await fetch(`${API}${path}`, {
+        method,
+        body: formData,
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+      
+      if (!res.ok) {
+        if (res.status === 413) {
+          throw new Error('File too large - maximum size is 100MB per file');
+        }
+        const errorText = await res.text().catch(() => res.statusText);
+        throw new Error(errorText || res.statusText);
+      }
+      
+      return res.json();
+    } catch (err) {
+      clearTimeout(timeout);
+      lastError = err as Error;
+      
+      if ((err as Error).name === 'AbortError') {
+        const mins = Math.round(timeoutMs / 60000);
+        throw new Error(`Upload timed out after ${mins} min. Try a smaller file or check your connection.`);
+      }
+      
+      // Don't retry on 413 (file too large)
+      if ((err as Error).message.includes('too large')) {
+        throw err;
+      }
+      
+      // Retry on CORS/network errors, but not on 400/500 errors
+      if (attempt < retries && (err as Error).message.includes('Failed to fetch')) {
+        console.warn(`Upload attempt ${attempt + 1} failed, retrying...`);
+        await new Promise(resolve => setTimeout(resolve, (attempt + 1) * 1000)); // 1s, 2s delay
+        continue;
+      }
+      
+      throw err;
     }
-    throw err;
   }
+  
+  throw lastError || new Error('Upload failed');
 }
 
 async function verifyAdminPassword(password: string) {
@@ -79,17 +118,17 @@ export const api = {
     uploadImage: (id: number, file: File) => {
       const fd = new FormData();
       fd.append('file', file);
-      return fetchFormData(`/upload/${id}/image`, fd);
+      return fetchFormData(`/upload/${id}/image`, fd, 'POST', 2, LARGE_FILE_UPLOAD_TIMEOUT);
     },
     uploadImages: (id: number, files: File[]) => {
       const fd = new FormData();
       files.forEach((f) => fd.append('files', f));
-      return fetchFormData(`/upload/${id}/images`, fd);
+      return fetchFormData(`/upload/${id}/images`, fd, 'POST', 2, LARGE_FILE_UPLOAD_TIMEOUT);
     },
     uploadFile: (id: number, file: File) => {
       const fd = new FormData();
       fd.append('file', file);
-      return fetchFormData(`/upload/${id}/file`, fd);
+      return fetchFormData(`/upload/${id}/file`, fd, 'POST', 2, LARGE_FILE_UPLOAD_TIMEOUT);
     },
   },
   orders: {

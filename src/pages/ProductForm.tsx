@@ -21,6 +21,7 @@ export function ProductForm() {
   const [uploadingPreviews, setUploadingPreviews] = useState<Set<string>>(new Set()); // preview URLs being uploaded
   const [productFiles, setProductFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState('');
   const [error, setError] = useState('');
   const [categories, setCategories] = useState<any[]>([]);
   const [developers, setDevelopers] = useState<any[]>([]);
@@ -80,10 +81,8 @@ export function ProductForm() {
           const relPath = url.startsWith('product-') ? url : `product-${pid}/images/${url.split('/').pop()}`;
           setExistingImageUrls((prev) => [...prev, relPath]);
           setCoverFiles((prev) => prev.filter((f) => f !== file));
-          setCoverPreviews((prev) => {
-            URL.revokeObjectURL(preview);
-            return prev.filter((p) => p !== preview);
-          });
+          setCoverPreviews((prev) => prev.filter((p) => p !== preview));
+          setTimeout(() => URL.revokeObjectURL(preview), 500);
         })
         .catch((e) => setError((e as Error).message))
         .finally(() => setUploadingPreviews((s) => { const n = new Set(s); n.delete(preview); return n; }));
@@ -163,83 +162,76 @@ export function ProductForm() {
     }
 
     const run = async () => {
-      const pid = isEdit ? parseInt(id!) : 0;
-      if (isEdit && id) {
-        // Upload images and files in parallel with error recovery
-        const uploadPromises: Promise<void>[] = [];
-        
-        if (coverFiles.length) {
-          uploadPromises.push(
-            api.products.uploadImages(pid, coverFiles).catch((e) => {
-              console.error('Image upload failed:', e);
-              throw new Error(`Image upload failed: ${e.message}`);
-            })
-          );
+      try {
+        const pid = isEdit ? parseInt(id!, 10) : 0;
+
+        if (isEdit && id) {
+          // 1) Update product metadata first
+          await api.products.update(pid, {
+            name: title,
+            price: parseFloat(price),
+            robux_price: robuxPrice ? parseInt(robuxPrice, 10) : null,
+            category_id: Number(catId),
+            description: description || undefined,
+            visibility,
+            tags: tagArr,
+            developer_id: developerId === '' ? null : developerId,
+          });
+
+          // 2) Upload cover images (parallel)
+          if (coverFiles.length) {
+            setUploadStatus(`Uploading ${coverFiles.length} image(s)...`);
+            await api.products.uploadImages(pid, coverFiles);
+          }
+
+          // 3) Upload product files one-by-one so we can show progress and avoid timeouts
+          const totalFiles = productFiles.length;
+          for (let i = 0; i < totalFiles; i++) {
+            const file = productFiles[i];
+            setUploadStatus(`Uploading file ${i + 1} of ${totalFiles} (${file.name})...`);
+            await api.products.uploadFile(pid, file);
+          }
+        } else {
+          // New product: create first, then uploads
+          const prod = (await api.products.create({
+            name: title,
+            price: parseFloat(price),
+            robux_price: robuxPrice ? parseInt(robuxPrice, 10) : null,
+            category_id: Number(catId),
+            description: description || undefined,
+            visibility,
+            tags: tagArr,
+            developer_id: developerId === '' ? null : developerId,
+          })) as { id: number };
+          const newPid = prod.id;
+
+          if (coverFiles.length) {
+            setUploadStatus(`Uploading ${coverFiles.length} image(s)...`);
+            await api.products.uploadImages(newPid, coverFiles);
+          }
+
+          const totalFiles = productFiles.length;
+          for (let i = 0; i < totalFiles; i++) {
+            const file = productFiles[i];
+            setUploadStatus(`Uploading file ${i + 1} of ${totalFiles} (${file.name})...`);
+            await api.products.uploadFile(newPid, file);
+          }
         }
-        
-        productFiles.forEach((f) => {
-          uploadPromises.push(
-            api.products.uploadFile(pid, f).catch((e) => {
-              console.error(`File upload failed (${f.name}):`, e);
-              throw new Error(`File "${f.name}" upload failed: ${e.message}`);
-            })
-          );
-        });
-        
-        await Promise.all(uploadPromises);
-        
-        await api.products.update(pid, {
-          name: title,
-          price: parseFloat(price),
-          robux_price: robuxPrice ? parseInt(robuxPrice) : null,
-          category_id: Number(catId),
-          description: description || undefined,
-          visibility,
-          tags: tagArr,
-          developer_id: developerId === '' ? null : developerId,
-        });
+
+        setUploadStatus('');
         navigate('/admin/products');
-      } else {
-        const prod = (await api.products.create({
-          name: title,
-          price: parseFloat(price),
-          robux_price: robuxPrice ? parseInt(robuxPrice) : null,
-          category_id: Number(catId),
-          description: description || undefined,
-          visibility,
-          tags: tagArr,
-          developer_id: developerId === '' ? null : developerId,
-        })) as { id: number };
-        const newPid = prod.id;
-        
-        // Upload images and files in parallel
-        const uploadPromises: Promise<void>[] = [];
-        
-        if (coverFiles.length) {
-          uploadPromises.push(
-            api.products.uploadImages(newPid, coverFiles).catch((e) => {
-              console.error('Image upload failed:', e);
-              throw new Error(`Image upload failed: ${e.message}`);
-            })
-          );
-        }
-        
-        productFiles.forEach((f) => {
-          uploadPromises.push(
-            api.products.uploadFile(newPid, f).catch((e) => {
-              console.error(`File upload failed (${f.name}):`, e);
-              throw new Error(`File "${f.name}" upload failed: ${e.message}`);
-            })
-          );
-        });
-        
-        await Promise.all(uploadPromises);
-        
-        navigate('/admin/products');
+      } catch (e) {
+        const message = e instanceof Error ? e.message : 'Something went wrong';
+        setError(message);
+        setUploadStatus('');
+        throw e;
+      } finally {
+        setLoading(false);
+        setUploadStatus('');
       }
     };
 
-    run().catch((e) => setError(e.message)).finally(() => setLoading(false));
+    run().catch(() => {});
   }
 
   function formatDesc(cmd: 'bold' | 'italic' | 'underline') {
@@ -607,21 +599,29 @@ export function ProductForm() {
           )}
         </div>
 
-        <div className="flex gap-2">
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-accent text-bg-primary px-6 py-2 rounded-full font-medium hover:bg-accent-hover disabled:opacity-50 border border-accent"
-          >
-            {loading ? 'Saving...' : isEdit ? 'Update Product' : 'Create Product'}
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate('/admin/products')}
-            className="border border-border-primary px-6 py-2 rounded-full"
-          >
-            Cancel
-          </button>
+        <div className="flex flex-col gap-2">
+          <div className="flex gap-2 items-center flex-wrap">
+            <button
+              type="submit"
+              disabled={loading}
+              className="bg-accent text-bg-primary px-6 py-2 rounded-full font-medium hover:bg-accent-hover disabled:opacity-50 border border-accent"
+            >
+              {loading ? 'Saving...' : isEdit ? 'Update Product' : 'Create Product'}
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/admin/products')}
+              disabled={loading}
+              className="border border-border-primary px-6 py-2 rounded-full disabled:opacity-50"
+            >
+              Cancel
+            </button>
+          </div>
+          {uploadStatus && (
+            <p className="text-sm text-text-muted">
+              {uploadStatus} Large files may take several minutes.
+            </p>
+          )}
         </div>
       </form>
 
