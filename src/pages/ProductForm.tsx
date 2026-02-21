@@ -150,7 +150,7 @@ export function ProductForm() {
 
   function handleVideoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    if (videoPreview) URL.revokeObjectURL(videoPreview);
+    const prevPreview = videoPreview;
     if (file && isEdit && id) {
       const previewUrl = URL.createObjectURL(file);
       setVideoPreview(previewUrl);
@@ -159,11 +159,13 @@ export function ProductForm() {
         .uploadVideo(parseInt(id), file)
         .then(({ url }) => {
           setExistingVideoUrl(url);
-          URL.revokeObjectURL(previewUrl);
           setVideoPreview(null);
+          // Revoke after React re-renders with new URL (prevents ERR_REQUEST_RANGE_NOT_SATISFIABLE)
+          setTimeout(() => URL.revokeObjectURL(previewUrl), 100);
         })
         .catch((e) => setError((e as Error).message))
         .finally(() => setUploadingVideo(false));
+      if (prevPreview) setTimeout(() => URL.revokeObjectURL(prevPreview), 100);
     }
     e.target.value = '';
   }
@@ -555,6 +557,7 @@ export function ProductForm() {
                 controls
                 muted
                 playsInline
+                preload="metadata"
               />
               {uploadingVideo && (
                 <div className="absolute inset-0 bg-black/40 rounded-lg flex items-center justify-center">
