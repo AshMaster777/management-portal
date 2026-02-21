@@ -31,7 +31,6 @@ export function ProductForm() {
   const [existingImageUrls, setExistingImageUrls] = useState<string[]>([]);
   const [existingFileUrls, setExistingFileUrls] = useState<string[]>([]);
   const [existingVideoUrl, setExistingVideoUrl] = useState<string | null>(null);
-  const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [cropQueue, setCropQueue] = useState<File[]>([]);
@@ -153,15 +152,13 @@ export function ProductForm() {
     const file = e.target.files?.[0];
     if (videoPreview) URL.revokeObjectURL(videoPreview);
     if (file && isEdit && id) {
-          const previewUrl = URL.createObjectURL(file);
-      setVideoFile(file);
+      const previewUrl = URL.createObjectURL(file);
       setVideoPreview(previewUrl);
       setUploadingVideo(true);
       api.products
         .uploadVideo(parseInt(id), file)
         .then(({ url }) => {
           setExistingVideoUrl(url);
-          setVideoFile(null);
           URL.revokeObjectURL(previewUrl);
           setVideoPreview(null);
         })
@@ -174,7 +171,6 @@ export function ProductForm() {
   function removeVideo() {
     if (!isEdit || !id) return;
     if (videoPreview) URL.revokeObjectURL(videoPreview);
-    setVideoFile(null);
     setVideoPreview(null);
     setExistingVideoUrl(null);
     api.products.update(parseInt(id), { video_url: null }).catch((e) => setError((e as Error).message));
