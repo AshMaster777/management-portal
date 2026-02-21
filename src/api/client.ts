@@ -21,16 +21,18 @@ async function fetchFormData(
   timeoutMs = DEFAULT_UPLOAD_TIMEOUT
 ) {
   let lastError: Error | null = null;
+  const url = path.startsWith('http') ? path : `${API}${path.startsWith('/') ? path : '/' + path}`;
 
   for (let attempt = 0; attempt <= retries; attempt++) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
     
     try {
-      const res = await fetch(`${API}${path}`, {
+      const res = await fetch(url, {
         method,
         body: formData,
         signal: controller.signal,
+        credentials: 'include',
       });
       clearTimeout(timeout);
       
