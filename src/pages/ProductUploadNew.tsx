@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
+import { ImageCropModal } from '../components/ImageCropModal';
 
 const UPLOAD_STEP_TIMEOUT_MS = 11 * 60 * 1000; // 11 min per file so we never hang
 
@@ -15,6 +16,7 @@ export function ProductUploadNew() {
   const [tags, setTags] = useState('');
   const [developerId, setDeveloperId] = useState<number | ''>('');
   const [coverFiles, setCoverFiles] = useState<File[]>([]);
+  const [cropQueue, setCropQueue] = useState<File[]>([]);
   const [productFiles, setProductFiles] = useState<File[]>([]);
 
   const [loading, setLoading] = useState(false);
@@ -43,6 +45,17 @@ export function ProductUploadNew() {
     if (err instanceof Error) return err.message;
     if (typeof err === 'string') return err;
     return 'Unknown error';
+  }
+
+  function handleCropComplete(file: File) {
+    setCoverFiles((prev) => [...prev, file].slice(0, 9));
+    setCropQueue((prev) => prev.slice(1));
+  }
+
+  function handleCropSkip() {
+    const current = cropQueue[0];
+    if (current) setCoverFiles((prev) => [...prev, current].slice(0, 9));
+    setCropQueue((prev) => prev.slice(1));
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -281,16 +294,20 @@ export function ProductUploadNew() {
         {/* Cover images */}
         <section className="space-y-4">
           <h2 className="text-lg font-semibold text-text-primary border-b border-border-primary pb-2">Cover images (optional)</h2>
-          <p className="text-text-muted text-sm">First image is the main one. Max 9, 100MB each.</p>
+          <p className="text-text-muted text-sm">Crop to 16:10 to fit product cards. First image is the main one. Max 9, 100MB each.</p>
           <input
             type="file"
             accept="image/*"
             multiple
-            onChange={(e) => setCoverFiles(Array.from(e.target.files || []).slice(0, 9))}
+            onChange={(e) => {
+              const files = Array.from(e.target.files || []).slice(0, 9 - coverFiles.length);
+              if (files.length) setCropQueue((prev) => [...prev, ...files].slice(0, 9 - coverFiles.length));
+              e.target.value = '';
+            }}
             className="block w-full text-sm text-text-muted file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-accent file:text-bg-primary file:font-medium"
           />
           {coverFiles.length > 0 && (
-            <p className="text-text-secondary text-sm">{coverFiles.length} image(s) selected</p>
+            <p className="text-text-secondary text-sm">{coverFiles.length} image(s) selected{cropQueue.length > 0 && `, ${cropQueue.length} pending crop`}</p>
           )}
         </section>
 
@@ -339,6 +356,15 @@ export function ProductUploadNew() {
           )}
         </div>
       </form>
+
+      {cropQueue.length > 0 && (
+        <ImageCropModal
+          key={cropQueue[0].name + cropQueue[0].size}
+          file={cropQueue[0]}
+          onComplete={handleCropComplete}
+          onCancel={handleCropSkip}
+        />
+      )}
     </div>
   );
 }

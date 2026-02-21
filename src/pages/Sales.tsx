@@ -46,8 +46,8 @@ export function Sales() {
 
       <div className="bg-bg-card p-6 rounded-xl border border-border-primary">
         <h2 className="text-lg font-bold mb-4 font-display">Sales Trends</h2>
-        <div className="h-[400px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
+        <div className="h-[400px] w-full min-h-[280px]">
+          <ResponsiveContainer width="100%" height={400} minHeight={280}>
             <AreaChart data={salesData}>
               <defs>
                 <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">

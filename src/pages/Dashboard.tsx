@@ -99,7 +99,7 @@ export function Dashboard() {
                   : 'bg-bg-card border border-border-primary text-text-secondary hover:text-text-primary'
               }`}
             >
-              {p === 'all' ? 'All time' : p.charAt(0).toUpperCase() + p.slice(1)}
+              {p === 'daily' ? 'Today' : p === 'weekly' ? 'Week' : p === 'monthly' ? 'Month' : 'All time'}
             </button>
           ))}
         </div>
