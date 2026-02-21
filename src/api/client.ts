@@ -114,7 +114,7 @@ export const api = {
     get: (id: number) => fetchApi<any>(`/products/${id}?admin=1`),
     create: (data: { name: string; price: number; category_id: number; description?: string; visibility?: string; tags?: string[]; robux_price?: number | null; developer_id?: number | null }) =>
       fetchApi(`/products`, { method: 'POST', body: JSON.stringify(data) }),
-    update: (id: number, data: Partial<{ name: string; price: number; category_id: number; description: string; visibility: string; tags: string[]; image_urls: string[]; robux_price: number | null; developer_id: number | null }>) =>
+    update: (id: number, data: Partial<{ name: string; price: number; category_id: number; description: string; visibility: string; tags: string[]; image_urls: string[]; video_url: string | null; robux_price: number | null; developer_id: number | null }>) =>
       fetchApi(`/products/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
     delete: (id: number) => fetchApi(`/products/${id}`, { method: 'DELETE' }),
     uploadImage: (id: number, file: File) => {
@@ -131,6 +131,11 @@ export const api = {
       const fd = new FormData();
       fd.append('file', file);
       return fetchFormData(`/upload/${id}/file`, fd, 'POST', 2, LARGE_FILE_UPLOAD_TIMEOUT);
+    },
+    uploadVideo: (id: number, file: File) => {
+      const fd = new FormData();
+      fd.append('file', file);
+      return fetchFormData(`/upload/${id}/video`, fd, 'POST', 2, LARGE_FILE_UPLOAD_TIMEOUT) as Promise<{ url: string }>;
     },
   },
   orders: {

@@ -30,6 +30,10 @@ export function ProductForm() {
   const [existingFileCount, setExistingFileCount] = useState(0);
   const [existingImageUrls, setExistingImageUrls] = useState<string[]>([]);
   const [existingFileUrls, setExistingFileUrls] = useState<string[]>([]);
+  const [existingVideoUrl, setExistingVideoUrl] = useState<string | null>(null);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [videoPreview, setVideoPreview] = useState<string | null>(null);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
   const [cropQueue, setCropQueue] = useState<File[]>([]);
 
   // Cleanup object URLs on unmount
@@ -63,9 +67,12 @@ export function ProductForm() {
         setExistingFileUrls(fileUrls);
         const imgUrls = p.image_urls?.length ? p.image_urls : (p.image_url ? [p.image_url] : []);
         setExistingImageUrls(imgUrls);
+        setExistingVideoUrl(p.video_url || null);
       });
     }
   }, [isEdit, id]);
+
+  useEffect(() => () => { if (videoPreview) URL.revokeObjectURL(videoPreview); }, [videoPreview]);
 
   function addImageFromCrop(file: File) {
     const preview = URL.createObjectURL(file);
@@ -140,6 +147,37 @@ export function ProductForm() {
         return prev.filter((_, i) => i !== index);
       });
     }
+  }
+
+  function handleVideoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (videoPreview) URL.revokeObjectURL(videoPreview);
+    if (file && isEdit && id) {
+          const previewUrl = URL.createObjectURL(file);
+      setVideoFile(file);
+      setVideoPreview(previewUrl);
+      setUploadingVideo(true);
+      api.products
+        .uploadVideo(parseInt(id), file)
+        .then(({ url }) => {
+          setExistingVideoUrl(url);
+          setVideoFile(null);
+          URL.revokeObjectURL(previewUrl);
+          setVideoPreview(null);
+        })
+        .catch((e) => setError((e as Error).message))
+        .finally(() => setUploadingVideo(false));
+    }
+    e.target.value = '';
+  }
+
+  function removeVideo() {
+    if (!isEdit || !id) return;
+    if (videoPreview) URL.revokeObjectURL(videoPreview);
+    setVideoFile(null);
+    setVideoPreview(null);
+    setExistingVideoUrl(null);
+    api.products.update(parseInt(id), { video_url: null }).catch((e) => setError((e as Error).message));
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -486,7 +524,7 @@ export function ProductForm() {
               </div>
             ))}
           </div>
-          <p className="text-text-muted text-xs mb-2">Crop to 16:10 to fit product cards. First image is main. Click ★ to set main. Min width 1000px. Max 100MB per file.</p>
+          <p className="text-text-muted text-xs mb-2">Crop to 16:10 to fit product cards. First image is main (product cards & social embed). Click ★ to set main. Min width 1000px. Max 100MB per file.</p>
           <p className="text-text-muted text-xs mb-2">If you see &quot;image too large&quot; or upload fails, the server (nginx) must allow large bodies: <code className="bg-bg-card px-1 rounded">client_max_body_size 100M;</code></p>
           <input
             type="file"
@@ -507,6 +545,42 @@ export function ProductForm() {
           >
             + Add product images
           </label>
+        </div>
+
+        {/* Video (optional – cannot be main) */}
+        <div>
+          <h2 className="text-lg font-semibold mb-2">Video (optional)</h2>
+          <p className="text-text-muted text-sm mb-2">One video per product. Plays on hover on product cards. Cannot be main – main is always the first image.</p>
+          {(existingVideoUrl || videoPreview) && (
+            <div className="relative inline-block mb-3">
+              <video
+                src={videoPreview || `${MEDIA_BASE}/${existingVideoUrl}`}
+                className="w-48 rounded-lg border border-border-primary bg-[#404040]"
+                controls
+                muted
+                playsInline
+              />
+              {uploadingVideo && (
+                <div className="absolute inset-0 bg-black/40 rounded-lg flex items-center justify-center">
+                  <span className="text-white text-sm animate-pulse">Uploading...</span>
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={removeVideo}
+                className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-red-500 text-white text-sm flex items-center justify-center opacity-0 group-hover:opacity-100 hover:opacity-100 transition-opacity hover:bg-red-600"
+                title="Remove video"
+              >
+                ×
+              </button>
+            </div>
+          )}
+          <input
+            type="file"
+            accept="video/*"
+            onChange={handleVideoChange}
+            className="block w-full text-sm text-text-muted file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-accent file:text-bg-primary file:font-medium"
+          />
         </div>
 
         {/* Description */}

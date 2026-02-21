@@ -18,6 +18,8 @@ export function ProductUploadNew() {
   const [coverFiles, setCoverFiles] = useState<File[]>([]);
   const [coverPreviews, setCoverPreviews] = useState<string[]>([]); // object URLs for thumbnails
   const [cropQueue, setCropQueue] = useState<File[]>([]);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [videoPreview, setVideoPreview] = useState<string | null>(null);
   const [productFiles, setProductFiles] = useState<File[]>([]);
 
   // Keep previews in sync with coverFiles and cleanup on unmount
@@ -29,6 +31,9 @@ export function ProductUploadNew() {
     });
     return () => urls.forEach((u) => URL.revokeObjectURL(u));
   }, [coverFiles]);
+
+  // Video preview cleanup
+  useEffect(() => () => { if (videoPreview) URL.revokeObjectURL(videoPreview); }, [videoPreview]);
 
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState('');
@@ -81,6 +86,25 @@ export function ProductUploadNew() {
 
   function removeCoverImage(index: number) {
     setCoverFiles((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  function handleVideoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (videoPreview) URL.revokeObjectURL(videoPreview);
+    if (file) {
+      setVideoFile(file);
+      setVideoPreview(URL.createObjectURL(file));
+    } else {
+      setVideoFile(null);
+      setVideoPreview(null);
+    }
+    e.target.value = '';
+  }
+
+  function removeVideo() {
+    if (videoPreview) URL.revokeObjectURL(videoPreview);
+    setVideoFile(null);
+    setVideoPreview(null);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -142,7 +166,21 @@ export function ProductUploadNew() {
         }
       }
 
-      // 3) Product files – one by one, record each failure
+      // 3) Video (optional, cannot be main – main is always first image)
+      if (videoFile) {
+        setStep(`Uploading video (${videoFile.name})…`);
+        try {
+          await withTimeout(
+            api.products.uploadVideo(pid, videoFile),
+            UPLOAD_STEP_TIMEOUT_MS,
+            `Video (${videoFile.name})`
+          );
+        } catch (err) {
+          errors.push({ step: `Video (${videoFile.name})`, message: errMessage(err) });
+        }
+      }
+
+      // 4) Product files – one by one, record each failure
       const total = productFiles.length;
       for (let i = 0; i < total; i++) {
         const file = productFiles[i];
@@ -370,6 +408,37 @@ export function ProductUploadNew() {
               if (files.length) setCropQueue((prev) => [...prev, ...files].slice(0, 9 - coverFiles.length));
               e.target.value = '';
             }}
+            className="block w-full text-sm text-text-muted file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-accent file:text-bg-primary file:font-medium"
+          />
+        </section>
+
+        {/* Video (optional – cannot be main; only images can be main) */}
+        <section className="space-y-4">
+          <h2 className="text-lg font-semibold text-text-primary border-b border-border-primary pb-2">Video (optional)</h2>
+          <p className="text-text-muted text-sm">One video per product. Plays on hover on product cards. Cannot be main – main display is always the first image.</p>
+          {videoPreview && (
+            <div className="relative inline-block">
+              <video
+                src={videoPreview}
+                className="w-48 rounded-lg border border-border-primary bg-[#404040]"
+                controls
+                muted
+                playsInline
+              />
+              <button
+                type="button"
+                onClick={removeVideo}
+                className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-red-500 text-white text-sm flex items-center justify-center hover:bg-red-600"
+                title="Remove video"
+              >
+                ×
+              </button>
+            </div>
+          )}
+          <input
+            type="file"
+            accept="video/*"
+            onChange={handleVideoChange}
             className="block w-full text-sm text-text-muted file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-accent file:text-bg-primary file:font-medium"
           />
         </section>
