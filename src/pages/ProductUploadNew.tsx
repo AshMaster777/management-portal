@@ -16,8 +16,19 @@ export function ProductUploadNew() {
   const [tags, setTags] = useState('');
   const [developerId, setDeveloperId] = useState<number | ''>('');
   const [coverFiles, setCoverFiles] = useState<File[]>([]);
+  const [coverPreviews, setCoverPreviews] = useState<string[]>([]); // object URLs for thumbnails
   const [cropQueue, setCropQueue] = useState<File[]>([]);
   const [productFiles, setProductFiles] = useState<File[]>([]);
+
+  // Keep previews in sync with coverFiles and cleanup on unmount
+  useEffect(() => {
+    const urls = coverFiles.map((f) => URL.createObjectURL(f));
+    setCoverPreviews((prev) => {
+      prev.forEach((u) => URL.revokeObjectURL(u));
+      return urls;
+    });
+    return () => urls.forEach((u) => URL.revokeObjectURL(u));
+  }, [coverFiles]);
 
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState('');
@@ -56,6 +67,20 @@ export function ProductUploadNew() {
     const current = cropQueue[0];
     if (current) setCoverFiles((prev) => [...prev, current].slice(0, 9));
     setCropQueue((prev) => prev.slice(1));
+  }
+
+  function setAsMainImage(index: number) {
+    if (index === 0) return;
+    setCoverFiles((prev) => {
+      const next = [...prev];
+      const [removed] = next.splice(index, 1);
+      next.unshift(removed);
+      return next;
+    });
+  }
+
+  function removeCoverImage(index: number) {
+    setCoverFiles((prev) => prev.filter((_, i) => i !== index));
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -294,7 +319,48 @@ export function ProductUploadNew() {
         {/* Cover images */}
         <section className="space-y-4">
           <h2 className="text-lg font-semibold text-text-primary border-b border-border-primary pb-2">Cover images (optional)</h2>
-          <p className="text-text-muted text-sm">Crop to 16:10 to fit product cards. First image is the main one. Max 9, 100MB each.</p>
+          <p className="text-text-muted text-sm">Crop to 16:10 to fit product cards. First image is the main display (product cards, social/Discord embed). Max 9, 100MB each.</p>
+          {coverPreviews.length > 0 && (
+            <div className="flex flex-wrap gap-3">
+              {coverPreviews.map((preview, i) => (
+                <div key={i} className="relative group">
+                  <div
+                    className={`block w-24 h-24 rounded-lg overflow-hidden border flex-shrink-0 bg-[#404040] ${
+                      i === 0 ? 'border-accent ring-2 ring-accent/50' : 'border-border-primary'
+                    }`}
+                  >
+                    <img src={preview} alt={`Cover ${i + 1}`} className="w-full h-full object-cover" />
+                    {i === 0 && (
+                      <span className="absolute bottom-0 left-0 right-0 bg-accent/90 text-bg-primary text-xs py-0.5 text-center font-medium">
+                        Main
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeCoverImage(i)}
+                    className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-red-500 text-white text-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                    title="Remove"
+                  >
+                    ×
+                  </button>
+                  {i !== 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setAsMainImage(i)}
+                      className="absolute -top-1 -left-1 w-6 h-6 rounded-full bg-accent text-bg-primary text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-accent-hover"
+                      title="Set as main (product cards & social image)"
+                    >
+                      ★
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+          {coverFiles.length > 0 && cropQueue.length > 0 && (
+            <p className="text-text-secondary text-sm">{cropQueue.length} pending crop</p>
+          )}
           <input
             type="file"
             accept="image/*"
@@ -306,9 +372,6 @@ export function ProductUploadNew() {
             }}
             className="block w-full text-sm text-text-muted file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-accent file:text-bg-primary file:font-medium"
           />
-          {coverFiles.length > 0 && (
-            <p className="text-text-secondary text-sm">{coverFiles.length} image(s) selected{cropQueue.length > 0 && `, ${cropQueue.length} pending crop`}</p>
-          )}
         </section>
 
         {/* Product file(s) */}
