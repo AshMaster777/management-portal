@@ -188,6 +188,10 @@ export const api = {
       fetchApi(`/staff/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
     delete: (id: number) => fetchApi<{ success: boolean }>(`/staff/${id}`, { method: 'DELETE' }),
   },
+  staffEarnings: {
+    summary: () => fetchApi<{ staff: { staff_id: number; user_id: number; email?: string; username?: string; total: number; partnerships_count: number }[] }>(`/staff-earnings?summary=1`),
+    reset: (staffId: number) => fetchApi<{ success: boolean }>(`/staff-earnings/reset`, { method: 'POST', body: JSON.stringify({ staff_id: staffId }) }),
+  },
   partners: {
     list: () => fetchApi<{ id: number; name: string; logo_url: string | null; link: string | null }[]>(`/partners`),
     create: (data: { name: string; logo_url?: string; link?: string }) =>

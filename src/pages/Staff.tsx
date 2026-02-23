@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Pencil, Trash2, Package, ShoppingCart, BarChart3, User, Layers, Tag, Handshake } from 'lucide-react';
+import { Plus, Pencil, Trash2, Package, ShoppingCart, BarChart3, User, Layers, Tag, Handshake, RotateCcw, DollarSign } from 'lucide-react';
 import { api } from '../api/client';
 
 const PERM_LABELS: Record<string, { label: string; icon: typeof Package }> = {
@@ -21,25 +21,45 @@ type StaffMember = {
   created_at: string;
 };
 
+type StaffEarning = { staff_id: number; user_id: number; email?: string; username?: string; total: number; partnerships_count: number };
+
 export function Staff() {
   const [staff, setStaff] = useState<StaffMember[]>([]);
   const [users, setUsers] = useState<{ id: number; email: string; username: string }[]>([]);
+  const [earnings, setEarnings] = useState<StaffEarning[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<StaffMember | null>(null);
   const [selectedUserId, setSelectedUserId] = useState<number | ''>('');
   const [permissions, setPermissions] = useState<Record<string, boolean>>({});
+  const [resettingId, setResettingId] = useState<number | null>(null);
 
   function load() {
     setLoading(true);
-    Promise.all([api.staff.list(), api.users.list()])
-      .then(([s, u]) => {
+    Promise.all([api.staff.list(), api.users.list(), api.staffEarnings.summary()])
+      .then(([s, u, e]) => {
         setStaff(s);
         setUsers(u);
+        setEarnings(e.staff || []);
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
+  }
+
+  function getEarnings(staffId: number): StaffEarning | undefined {
+    return earnings.find((x) => x.staff_id === staffId);
+  }
+
+  function handleResetEarnings(staffId: number) {
+    if (!confirm('Reset this staff member\'s earnings to zero? Use this after paying them out.')) return;
+    setResettingId(staffId);
+    setError('');
+    api.staffEarnings
+      .reset(staffId)
+      .then(() => load())
+      .catch((e) => setError(e.message))
+      .finally(() => setResettingId(null));
   }
 
   useEffect(() => load(), []);
@@ -180,37 +200,58 @@ export function Staff() {
               <tr>
                 <th className="p-4 font-medium text-text-secondary">User</th>
                 <th className="p-4 font-medium text-text-secondary">Permissions</th>
+                <th className="p-4 font-medium text-text-secondary">Earnings</th>
                 <th className="p-4 font-medium text-text-secondary">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border-primary">
-              {staff.map((s) => (
-                <tr key={s.id} className="hover:bg-bg-hover transition-colors">
-                  <td className="p-4">
-                    <p className="font-medium">{s.email || '—'}</p>
-                    <p className="text-sm text-text-muted">{s.username || '—'}</p>
-                  </td>
-                  <td className="p-4">
-                    <div className="flex flex-wrap gap-2">
-                      {Object.entries(s.permissions || {})
-                        .filter(([, v]) => v)
-                        .map(([k]) => (
-                          <span key={k} className="px-2 py-1 rounded-full text-xs bg-accent/20 text-accent">
-                            {PERM_LABELS[k]?.label || k}
-                          </span>
-                        ))}
-                    </div>
-                  </td>
-                  <td className="p-4 flex gap-2">
-                    <button onClick={() => handleEdit(s)} className="p-2 text-text-muted hover:text-accent">
-                      <Pencil size={18} />
-                    </button>
-                    <button onClick={() => handleDelete(s.id)} className="p-2 text-text-muted hover:text-red-400">
-                      <Trash2 size={18} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {staff.map((s) => {
+                const e = getEarnings(s.id);
+                const total = e?.total ?? 0;
+                const partnershipsCount = e?.partnerships_count ?? 0;
+                return (
+                  <tr key={s.id} className="hover:bg-bg-hover transition-colors">
+                    <td className="p-4">
+                      <p className="font-medium">{s.email || '—'}</p>
+                      <p className="text-sm text-text-muted">{s.username || '—'}</p>
+                    </td>
+                    <td className="p-4">
+                      <div className="flex flex-wrap gap-2">
+                        {Object.entries(s.permissions || {})
+                          .filter(([, v]) => v)
+                          .map(([k]) => (
+                            <span key={k} className="px-2 py-1 rounded-full text-xs bg-accent/20 text-accent">
+                              {PERM_LABELS[k]?.label || k}
+                            </span>
+                          ))}
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      <div className="flex items-center gap-2">
+                        <DollarSign size={16} className="text-accent" />
+                        <span className="font-medium text-accent">R$ {total.toLocaleString()}</span>
+                        <span className="text-text-muted text-sm">({partnershipsCount} partnerships)</span>
+                      </div>
+                    </td>
+                    <td className="p-4 flex gap-2">
+                      <button onClick={() => handleEdit(s)} className="p-2 text-text-muted hover:text-accent" title="Edit">
+                        <Pencil size={18} />
+                      </button>
+                      <button
+                        onClick={() => handleResetEarnings(s.id)}
+                        disabled={resettingId === s.id || total === 0}
+                        className="p-2 text-text-muted hover:text-amber-500 disabled:opacity-40 disabled:cursor-not-allowed"
+                        title="Reset earnings (after payout)"
+                      >
+                        <RotateCcw size={18} />
+                      </button>
+                      <button onClick={() => handleDelete(s.id)} className="p-2 text-text-muted hover:text-red-400" title="Remove staff">
+                        <Trash2 size={18} />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}

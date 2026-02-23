@@ -215,7 +215,7 @@ export function Partnerships() {
           <h3 className="font-semibold mb-4">Partnership Settings</h3>
           <div className="space-y-3 mb-4">
             <label className="block">
-              <span className="text-text-secondary text-sm">Payment per accepted partnership ($)</span>
+              <span className="text-text-secondary text-sm">Payment per accepted partnership (R$ Robux)</span>
               <input
                 type="number"
                 step="0.01"
