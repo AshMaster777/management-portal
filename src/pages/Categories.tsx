@@ -82,9 +82,9 @@ export function Categories() {
             resetForm();
             setShowForm(!showForm);
           }}
-          className="flex items-center gap-2 bg-accent text-bg-primary px-4 py-2 rounded-full font-medium hover:bg-accent-hover border border-accent transition-colors"
+          className="flex items-center gap-2 bg-gradient-to-r from-accent to-accent-hover text-bg-primary px-6 py-2.5 rounded-full font-bold hover:shadow-lg hover:shadow-accent/20 hover:-translate-y-0.5 transition-all"
         >
-          <Plus size={20} />
+          <Plus size={20} strokeWidth={2.5} />
           Add Category
         </button>
       </div>
@@ -92,37 +92,37 @@ export function Categories() {
       {error && <p className="mb-4 text-red-400 text-sm">{error}</p>}
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="mb-6 p-4 bg-bg-card rounded-xl border border-border-primary">
-          <label className="block mb-2 text-text-secondary text-sm">Category Name</label>
+        <form onSubmit={handleSubmit} className="mb-8 p-6 bg-bg-card rounded-3xl border border-border-light shadow-sm">
+          <label className="block mb-2 text-text-secondary text-sm font-bold uppercase tracking-wider">Category Name</label>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full max-w-md bg-bg-tertiary border border-border-primary rounded-lg py-2 px-4 text-text-primary mb-3"
+            className="w-full max-w-md bg-bg-primary border border-border-light rounded-2xl py-3 px-5 text-text-primary mb-5 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all shadow-inner"
             placeholder="e.g. Aircraft"
             required
           />
           
-          <label className="block mb-2 text-text-secondary text-sm">Description (Optional)</label>
+          <label className="block mb-2 text-text-secondary text-sm font-bold uppercase tracking-wider">Description (Optional)</label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full max-w-md bg-bg-tertiary border border-border-primary rounded-lg py-2 px-4 text-text-primary mb-3 h-20"
+            className="w-full max-w-md bg-bg-primary border border-border-light rounded-2xl py-3 px-5 text-text-primary mb-5 h-24 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all shadow-inner resize-none"
             placeholder="Short description for the landing page..."
           />
 
-          <label className="block mb-2 text-text-secondary text-sm">Icon Image (Optional)</label>
-          <div className="flex items-center gap-4 mb-4">
-            {iconUrl && <img src={iconUrl} alt="Icon preview" className="w-12 h-12 object-contain bg-bg-tertiary rounded p-1" />}
-            <label className="cursor-pointer flex items-center gap-2 px-4 py-2 bg-bg-tertiary border border-border-primary rounded-lg hover:bg-bg-hover transition-colors">
-              <Upload size={16} />
+          <label className="block mb-2 text-text-secondary text-sm font-bold uppercase tracking-wider">Icon Image (Optional)</label>
+          <div className="flex items-center gap-4 mb-6">
+            {iconUrl && <img src={iconUrl} alt="Icon preview" className="w-14 h-14 object-contain bg-bg-primary rounded-2xl p-2 shadow-inner" />}
+            <label className="cursor-pointer flex items-center gap-2 px-5 py-3 bg-bg-tertiary border border-border-light rounded-2xl hover:bg-bg-hover transition-all shadow-sm hover:shadow-md font-medium">
+              <Upload size={18} />
               <span>{uploading ? 'Uploading...' : 'Upload Icon'}</span>
               <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
             </label>
           </div>
 
-          <div className="mt-3 flex gap-2">
-            <button type="submit" className="bg-accent text-bg-primary px-4 py-2 rounded-full font-medium border border-accent" disabled={uploading}>
-              {editing ? 'Update' : 'Create'}
+          <div className="flex gap-3">
+            <button type="submit" className="bg-gradient-to-r from-accent to-accent-hover text-white px-6 py-2.5 rounded-full font-bold shadow-md hover:shadow-lg hover:shadow-accent/20 hover:-translate-y-0.5 transition-all" disabled={uploading}>
+              {editing ? 'Update Category' : 'Create Category'}
             </button>
             <button
               type="button"
@@ -131,7 +131,7 @@ export function Categories() {
                 setEditing(null);
                 resetForm();
               }}
-              className="border border-border-primary px-4 py-2 rounded-full"
+              className="bg-bg-tertiary text-text-primary px-6 py-2.5 rounded-full font-bold hover:bg-bg-hover transition-all shadow-sm hover:shadow-md"
             >
               Cancel
             </button>
@@ -139,38 +139,38 @@ export function Categories() {
         </form>
       )}
 
-      <div className="bg-bg-card rounded-xl border border-border-primary overflow-hidden">
+      <div className="bg-bg-card rounded-3xl border border-border-light overflow-hidden shadow-sm">
         {loading ? (
           <div className="p-8 text-center text-text-muted">Loading...</div>
         ) : categories.length === 0 ? (
           <div className="p-8 text-center text-text-muted">No categories found.</div>
         ) : (
           <table className="w-full text-left">
-            <thead className="bg-bg-tertiary border-b border-border-primary">
+            <thead className="bg-bg-tertiary/50 border-b border-border-light">
               <tr>
-                <th className="p-4 font-medium text-text-secondary w-16">Icon</th>
-                <th className="p-4 font-medium text-text-secondary">Name</th>
-                <th className="p-4 font-medium text-text-secondary">Description</th>
-                <th className="p-4 font-medium text-text-secondary">Slug</th>
-                <th className="p-4 font-medium text-text-secondary">Products</th>
-                <th className="p-4 font-medium text-text-secondary">Actions</th>
+                <th className="p-5 font-semibold text-text-secondary text-sm tracking-wider uppercase w-20">Icon</th>
+                <th className="p-5 font-semibold text-text-secondary text-sm tracking-wider uppercase">Name</th>
+                <th className="p-5 font-semibold text-text-secondary text-sm tracking-wider uppercase">Description</th>
+                <th className="p-5 font-semibold text-text-secondary text-sm tracking-wider uppercase">Slug</th>
+                <th className="p-5 font-semibold text-text-secondary text-sm tracking-wider uppercase">Products</th>
+                <th className="p-5 font-semibold text-text-secondary text-sm tracking-wider uppercase">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border-primary">
+            <tbody className="divide-y divide-border-light">
               {categories.map((c) => (
-                <tr key={c.id} className="hover:bg-bg-hover transition-colors">
-                  <td className="p-4">
+                <tr key={c.id} className="hover:bg-bg-hover transition-colors group">
+                  <td className="p-5">
                     {c.icon_url ? (
-                      <img src={c.icon_url} alt={c.name} className="w-8 h-8 object-contain" />
+                      <img src={c.icon_url} alt={c.name} className="w-10 h-10 object-contain group-hover:scale-110 transition-transform" />
                     ) : (
-                      <div className="w-8 h-8 bg-bg-tertiary rounded"></div>
+                      <div className="w-10 h-10 bg-bg-tertiary rounded-xl shadow-inner"></div>
                     )}
                   </td>
-                  <td className="p-4 font-medium">{c.name}</td>
-                  <td className="p-4 text-text-muted text-sm truncate max-w-xs">{c.description}</td>
-                  <td className="p-4 text-text-muted text-sm">{c.slug}</td>
-                  <td className="p-4 text-text-muted text-sm">{c.product_count}</td>
-                  <td className="p-4 flex gap-2">
+                  <td className="p-5 font-bold text-text-primary">{c.name}</td>
+                  <td className="p-5 text-text-muted text-sm truncate max-w-xs font-medium">{c.description}</td>
+                  <td className="p-5"><span className="text-text-muted text-sm font-medium bg-bg-tertiary px-3 py-1.5 rounded-[14px]">{c.slug}</span></td>
+                  <td className="p-5 font-bold text-accent">{c.product_count}</td>
+                  <td className="p-5 flex gap-2">
                     <button
                       onClick={() => {
                         setEditing(c);
@@ -179,11 +179,11 @@ export function Categories() {
                         setIconUrl(c.icon_url || '');
                         setShowForm(true);
                       }}
-                      className="p-2 text-text-muted hover:text-accent"
+                      className="p-2.5 bg-bg-tertiary rounded-xl text-text-muted hover:text-accent hover:bg-accent/10 transition-colors"
                     >
                       <Pencil size={18} />
                     </button>
-                    <button onClick={() => handleDelete(c.id)} className="p-2 text-text-muted hover:text-red-400">
+                    <button onClick={() => handleDelete(c.id)} className="p-2.5 bg-bg-tertiary rounded-xl text-text-muted hover:text-red-400 hover:bg-red-400/10 transition-colors">
                       <Trash2 size={18} />
                     </button>
                   </td>

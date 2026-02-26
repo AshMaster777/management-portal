@@ -10,14 +10,14 @@ interface StatsCardProps {
 
 export function StatsCard({ title, value, change, trend, icon: Icon }: StatsCardProps) {
   return (
-    <div className="bg-bg-card p-6 rounded-xl border border-border-primary hover:border-border-light transition-colors">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-text-muted">{title}</p>
-          <p className="text-2xl font-bold mt-2 font-display text-text-primary">{value}</p>
+    <div className="bg-bg-card p-5 rounded-2xl border border-border-light hover:border-accent/20 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300 group">
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-semibold text-text-muted uppercase tracking-wider truncate">{title}</p>
+          <p className="text-2xl font-bold mt-1.5 font-display text-text-primary truncate">{value}</p>
         </div>
-        <div className="p-3 bg-bg-tertiary rounded-lg text-accent">
-          <Icon size={24} />
+        <div className="p-3 bg-accent/15 rounded-2xl text-accent flex-shrink-0 group-hover:bg-accent/25 group-hover:scale-105 transition-all duration-300">
+          <Icon size={22} strokeWidth={2.5} />
         </div>
       </div>
       {change && (

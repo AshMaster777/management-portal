@@ -68,28 +68,28 @@ export function Products() {
         </div>
         <Link
           to="/admin/products/new"
-          className="flex items-center gap-2 bg-accent text-bg-primary px-4 py-2 rounded-full font-medium hover:bg-accent-hover transition-colors border border-accent"
+          className="flex items-center gap-2 bg-accent text-[#0f0f14] px-5 py-2.5 rounded-2xl font-bold hover:bg-accent-hover transition-all shadow-md shadow-accent/20"
         >
-          <Plus size={20} />
+          <Plus size={20} strokeWidth={2.5} />
           Add Product
         </Link>
       </div>
 
       <div className="flex gap-4 mb-6 flex-wrap">
         <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={20} />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" size={20} />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search products..."
-            className="w-full bg-bg-card border border-border-primary rounded-lg py-2 pl-10 pr-4 text-text-primary focus:outline-none focus:border-accent"
+            className="w-full bg-bg-card border border-border-light rounded-2xl py-3 pl-12 pr-4 text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all shadow-sm"
           />
         </div>
         <select
           value={filterCat}
           onChange={(e) => setFilterCat(e.target.value)}
-          className="bg-bg-card border border-border-primary rounded-lg py-2 px-4 text-text-primary"
+          className="bg-bg-card border border-border-light rounded-2xl py-3 px-5 text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all shadow-sm"
         >
           <option value="">All categories</option>
           {categories.map((c) => (
@@ -100,7 +100,7 @@ export function Products() {
         </select>
       </div>
 
-      <div className="bg-bg-card rounded-xl border border-border-primary overflow-hidden">
+      <div className="bg-bg-card rounded-3xl border border-border-light overflow-hidden shadow-sm">
         {loading ? (
           <div className="p-8 text-center text-text-muted">Loading...</div>
         ) : filtered.length === 0 ? (
@@ -109,26 +109,26 @@ export function Products() {
           </div>
         ) : (
           <table className="w-full text-left">
-            <thead className="bg-bg-tertiary border-b border-border-primary">
+            <thead className="bg-bg-tertiary/50 border-b border-border-light">
               <tr>
-                <th className="p-4 font-medium text-text-secondary">Product</th>
-                <th className="p-4 font-medium text-text-secondary">Price</th>
-                <th className="p-4 font-medium text-text-secondary">Sales</th>
-                <th className="p-4 font-medium text-text-secondary">Revenue</th>
-                <th className="p-4 font-medium text-text-secondary">Category</th>
-                <th className="p-4 font-medium text-text-secondary">Developer</th>
-                <th className="p-4 font-medium text-text-secondary">Visibility</th>
-                <th className="p-4 font-medium text-text-secondary">Actions</th>
+                <th className="p-5 font-semibold text-text-secondary text-sm tracking-wider uppercase">Product</th>
+                <th className="p-5 font-semibold text-text-secondary text-sm tracking-wider uppercase">Price</th>
+                <th className="p-5 font-semibold text-text-secondary text-sm tracking-wider uppercase">Sales</th>
+                <th className="p-5 font-semibold text-text-secondary text-sm tracking-wider uppercase">Revenue</th>
+                <th className="p-5 font-semibold text-text-secondary text-sm tracking-wider uppercase">Category</th>
+                <th className="p-5 font-semibold text-text-secondary text-sm tracking-wider uppercase">Developer</th>
+                <th className="p-5 font-semibold text-text-secondary text-sm tracking-wider uppercase">Visibility</th>
+                <th className="p-5 font-semibold text-text-secondary text-sm tracking-wider uppercase">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border-primary">
+            <tbody className="divide-y divide-border-light">
               {filtered.map((p) => (
-                <tr key={p.id} className="hover:bg-bg-hover transition-colors">
-                  <td className="p-4 font-medium flex items-center gap-3">
-                    <img src={getThumb(p)} alt="" className="w-12 h-12 rounded object-cover bg-bg-tertiary" />
+                <tr key={p.id} className="hover:bg-bg-hover transition-colors group">
+                  <td className="p-5 font-bold flex items-center gap-4">
+                    <img src={getThumb(p)} alt="" className="w-14 h-14 rounded-xl object-cover bg-bg-tertiary shadow-sm group-hover:scale-105 transition-transform" />
                     {p.name}
                   </td>
-                  <td className="p-4">
+                  <td className="p-5">
                     <div className="flex flex-col gap-1">
                       <span>${Number(p.price).toFixed(2)}</span>
                       {p.robux_price && (
@@ -136,28 +136,28 @@ export function Products() {
                       )}
                     </div>
                   </td>
-                  <td className="p-4">{productStats[p.id]?.sales ?? 0}</td>
-                  <td className="p-4">${(productStats[p.id]?.revenue ?? 0).toFixed(2)}</td>
-                  <td className="p-4 text-text-muted">{p.category_name || '-'}</td>
-                  <td className="p-4 text-text-muted">{p.developer_name || '-'}</td>
-                  <td className="p-4">
+                  <td className="p-5 font-medium">{productStats[p.id]?.sales ?? 0}</td>
+                  <td className="p-5 font-medium text-accent">${(productStats[p.id]?.revenue ?? 0).toFixed(2)}</td>
+                  <td className="p-5 text-text-muted">{p.category_name || '-'}</td>
+                  <td className="p-5 text-text-muted">{p.developer_name || '-'}</td>
+                  <td className="p-5">
                     <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold ${
                         p.visibility === 'visible'
-                          ? 'bg-green-900/30 text-green-500'
+                          ? 'bg-emerald-500/20 text-emerald-300'
                           : p.visibility === 'unlisted'
-                          ? 'bg-yellow-900/30 text-yellow-500'
-                          : 'bg-gray-700 text-gray-400'
+                          ? 'bg-amber-500/20 text-amber-300'
+                          : 'bg-zinc-500/20 text-zinc-400'
                       }`}
                     >
                       {p.visibility || 'visible'}
                     </span>
                   </td>
-                  <td className="p-4 flex gap-2">
-                    <Link to={`/admin/products/${p.id}`} className="p-2 text-text-muted hover:text-accent">
+                  <td className="p-5 flex gap-2">
+                    <Link to={`/admin/products/${p.id}`} className="p-2.5 bg-bg-tertiary rounded-xl text-text-muted hover:text-accent hover:bg-accent/10 transition-colors">
                       <Pencil size={18} />
                     </Link>
-                    <button onClick={() => handleDelete(p.id)} className="p-2 text-text-muted hover:text-red-400">
+                    <button onClick={() => handleDelete(p.id)} className="p-2.5 bg-bg-tertiary rounded-xl text-text-muted hover:text-red-400 hover:bg-red-400/10 transition-colors">
                       <Trash2 size={18} />
                     </button>
                   </td>

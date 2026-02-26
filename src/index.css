@@ -1,32 +1,32 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
-/* Match main frontend theme (frontend/src/styles/variables.css) */
+/* Cute soft theme - pastels, rounded, friendly */
 :root {
-  /* Backgrounds */
-  --color-bg-primary: #09090b;
-  --color-bg-secondary: #0f0f12;
-  --color-bg-tertiary: #16161a;
-  --color-bg-card: #0f0f12;
-  --color-bg-hover: #1c1c21;
+  /* Backgrounds - soft dark with warmth */
+  --color-bg-primary: #0f0f14;
+  --color-bg-secondary: #16161d;
+  --color-bg-tertiary: #1e1e28;
+  --color-bg-card: #18181f;
+  --color-bg-hover: #22222d;
 
   /* Text */
-  --color-text-primary: #fafafa;
-  --color-text-secondary: #a1a1aa;
-  --color-text-muted: #52525b;
+  --color-text-primary: #f8f7fc;
+  --color-text-secondary: #b8b4c8;
+  --color-text-muted: #8a8699;
 
-  /* Accent - blue (same as main frontend) */
-  --color-accent: #3b82f6;
-  --color-accent-hover: #60a5fa;
-  --color-accent-muted: rgba(59, 130, 246, 0.08);
+  /* Accent - soft pastel lavender/pink (cute) */
+  --color-accent: #c4a7e7;
+  --color-accent-hover: #e0c3fc;
+  --color-accent-muted: rgba(196, 167, 231, 0.18);
 
-  /* Borders */
-  --color-border: rgba(255, 255, 255, 0.06);
-  --color-border-light: rgba(255, 255, 255, 0.12);
+  /* Borders - softer */
+  --color-border: rgba(184, 180, 200, 0.08);
+  --color-border-light: rgba(184, 180, 200, 0.15);
 
-  /* Typography */
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-display: 'Inter', var(--font-sans);
+  /* Typography - round, friendly */
+  --font-sans: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-display: 'Nunito', var(--font-sans);
 
   /* Spacing */
   --space-xs: 0.25rem;
@@ -35,13 +35,13 @@
   --space-lg: 1.5rem;
   --space-xl: 2rem;
 
-  /* Radius - match frontend */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 1rem;
+  /* Radius - extra rounded (cute, not blocky) */
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 26px;
 
-  --transition-fast: 150ms ease;
+  --transition-fast: 220ms cubic-bezier(0.34, 1.2, 0.64, 1);
 }
 
 body {
@@ -49,10 +49,12 @@ body {
   background-color: var(--color-bg-primary);
   color: var(--color-text-primary);
   line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
+  letter-spacing: -0.02em;
 }
 
 ::-webkit-scrollbar {
@@ -64,18 +66,19 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #27272a;
-  border-radius: 4px;
+  background: rgba(184, 180, 200, 0.2);
+  border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3f3f46;
+  background: rgba(184, 180, 200, 0.35);
 }
 
 select {
   background-color: var(--color-bg-card) !important;
   color: var(--color-text-primary) !important;
   color-scheme: dark;
+  border-radius: var(--radius-md);
 }
 
 select option {
@@ -88,4 +91,13 @@ button,
 .btn-like,
 label.cursor-pointer.inline-flex {
   border-radius: 9999px;
+  transition: all var(--transition-fast);
+}
+
+button:hover {
+  transform: translateY(-1px) scale(1.01);
+}
+
+button:active {
+  transform: translateY(0);
 }
