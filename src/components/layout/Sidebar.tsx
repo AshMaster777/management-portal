@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, ShoppingCart, Package, Tags, Layers, BarChart3, Settings, LogOut, FileText, Download, User, HelpCircle, Coins, Users, Handshake, ClipboardList, Code2, ChevronLeft, ChevronRight, Store, UserCog } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Package, Tags, Layers, BarChart3, Settings, LogOut, Download, HelpCircle, Coins, Users, Handshake, ClipboardList, Code2, ChevronLeft, ChevronRight, Store } from 'lucide-react';
 import { useState } from 'react';
 
 const navigationGroups = [
